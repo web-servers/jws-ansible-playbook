@@ -11,7 +11,6 @@
     package_name: "{{tomcat_java_packages_EL}}"
   when: tomcat_install_java|bool
 
-
 - name: Install {{ tomcat_java_packages_EL }}
   include_tasks: fastpackage.yml
   vars:
@@ -42,20 +41,7 @@
         path: "{{ workdir }}"
         state: directory
 
-    - name: "Get JWS-{{ jws_version }} from control node files and setup on remote"
-      unarchive:
-        src: jws-{{ jws_version }}-application-server.zip
-        dest: "{{ workdir }}"
-        owner: "{{ tomcat.user }}"
-        group: "{{ tomcat.group }}"
-        mode: 0750
-        creates: "{{ tomcat.home }}"
-
-    - name: "Get JWS-{{ jws_version }} for RHEL{{ ansible_facts['distribution_major_version'] }} from control node files and setup on remote"
-      unarchive:
-        src: jws-{{ jws_version }}-application-server-RHEL{{ ansible_facts['distribution_major_version'] }}-x86_64.zip
-        dest: "{{ workdir }}"
-        creates: "{{ tomcat.home }}/lib/libtcnative-1.so"
+    - include_tasks: install.yml
 
     - name: "Ensures {{ tomcat.home }}/{{ item }}/ has appropriate privileges."
       file:
@@ -104,13 +90,13 @@
       when: tomcat.apps.to_remove is defined
 
     - block:
-      - name: Copy tomcat vault file from control node to remote
-        copy:
-          src: "{{ tomcat_vault.name }}"
-          dest: "{{ tomcat.home }}/"
+        - name: Copy tomcat vault file from control node to remote
+          copy:
+            src: "{{ tomcat_vault.name }}"
+            dest: "{{ tomcat.home }}/"
 
-      - name: Initialize tomcat vault
-        command:
-          cmd: "{{ tomcat.home }}/bin/tomcat-vault.sh --keystore {{ tomcat.home }}/vault.keystore --keystore-password {{ tomcat_vault.storepass }} --alias {{ tomcat_vault.alias }} --enc-dir {{ tomcat.home }} --iteration 44 --salt 1234abcd -g {{ tomcat.home }}/conf/vault.properties"
+        - name: Initialize tomcat vault
+          command:
+            cmd: "{{ tomcat.home }}/bin/tomcat-vault.sh --keystore {{ tomcat.home }}/vault.keystore --keystore-password {{ tomcat_vault.storepass }} --alias {{ tomcat_vault.alias }} --enc-dir {{ tomcat.home }} --iteration 44 --salt 1234abcd -g {{ tomcat.home }}/conf/vault.properties"
       when: tomcat_vault.enable
   when: tomcat_setup

@@ -1,0 +1,28 @@
+---
+- assert:
+    that:
+      - tomcat is defined
+      - tomcat.install_method is defined
+      - tomcat.install_method == 'local_zipfiles' or tomcat.install_method == 'rpm' or tomcat.install_method == 'rhn_zipfiles'
+    quiet: true
+    fail_msg: "Install method is not properly defined: {{ tomcat.install_method }} (valid options are 'local_zipfiles', 'rpm' or 'rhn_zipfiles'"
+
+- block:
+    - name: "Get JWS-{{ jws_version }} from control node files and setup on remote"
+      unarchive:
+        src: jws-{{ jws_version }}-application-server.zip
+        dest: "{{ workdir }}"
+        owner: "{{ tomcat.user }}"
+        group: "{{ tomcat.group }}"
+        mode: 0750
+        creates: "{{ tomcat.home }}"
+
+    - name: "Get JWS-{{ jws_version }} for RHEL{{ ansible_facts['distribution_major_version'] }} from control node files and setup on remote"
+      unarchive:
+        src: jws-{{ jws_version }}-application-server-RHEL{{ ansible_facts['distribution_major_version'] }}-x86_64.zip
+        dest: "{{ workdir }}"
+        creates: "{{ tomcat.home }}/lib/libtcnative-1.so"
+  when:
+    - tomcat is defined
+    - tomcat.install_method is defined
+    - tomcat.install_method == 'local_zipfiles'
