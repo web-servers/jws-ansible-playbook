@@ -40,6 +40,9 @@
       file:
         path: "{{ workdir }}"
         state: directory
+        owner: "{{ tomcat.user }}"
+        group: "{{ tomcat.group }}"
+        mode: 0750
 
     - include_tasks: install.yml
 
