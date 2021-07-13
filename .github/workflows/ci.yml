@@ -15,8 +15,6 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-        with:
-          path: ansible_collections/middleware_automation/jws
 
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v1
