@@ -155,5 +155,3 @@ $ ansible-playbook -i hosts playbook.yml --ask-become-pass
 ```
 
 Execution should be successful without errors
-
-
